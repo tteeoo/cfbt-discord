@@ -7,10 +7,14 @@ import cor
 
 class BetterTransitBot(commands.Bot):
 
-    meetings = []
+    meeting_cache = []
 
     async def on_ready(self):
-        print(f'Logged on as {self.user}!')
+        print(f'Logged on as {self.user}')
+
+    def add_meeting(self, m):
+        self.meeting_cache.insert(0, m)
+        print(f'Added meeting: {m}')
 
 if __name__ == '__main__':
 
@@ -23,6 +27,7 @@ if __name__ == '__main__':
     intents = discord.Intents.default()
     intents.message_content = True
     client = BetterTransitBot(command_prefix='!', intents=intents)
-    # client.run(token)
+    #client.run(token)
 
-    m = cor.getMeeting() 
+    # Initialize meetings
+    client.add_meeting(cor.get_meeting())
