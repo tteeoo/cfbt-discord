@@ -2,15 +2,15 @@
 
 import asyncio
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import cor
 
-# TODO: - use tasks 
-# https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html
+# TODO:
+# - make recent meeting cache
 # - make cor meetings cog
-# - make events cog
 # https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html
+# - make events cog to update website?
 
 class BetterTransitBot(commands.Bot):
 
@@ -19,18 +19,18 @@ class BetterTransitBot(commands.Bot):
 
     async def on_ready(self):
         print(f'Logged on as {self.user}')
-        # Initialize meetings
-        await self.update()
 
+        # Get meeting agenda output channel ID
+        with open('channel.txt', 'r') as f:
+            target_channel = f.readline().strip()
+        print(f'Sending meeting agendas to channel ID {target_channel}')
+
+        print(f'Starting update task loop')
+        self.update.start()
+
+    @tasks.loop(seconds=5.0)
     async def update(self):
-        print('Starting update loop')
-        while True:
-            client.add_meeting(cor.get_meeting())
-            await asyncio.sleep(1)
-
-    @commands.command()
-    async def target(self, ctx):
-        await ctx.send(f'Target channel {ctx.channel}')
+        self.add_meeting(cor.get_recent())
 
     def add_meeting(self, m):
         """Add a meeting to the meeting cache"""
