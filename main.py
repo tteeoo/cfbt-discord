@@ -8,7 +8,6 @@ from discord.ext import commands, tasks
 import cor
 
 # TODO:
-# - make recent meeting cache
 # - make cor meetings cog
 # https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html
 # - make events cog to update website?
@@ -18,8 +17,8 @@ class BetterTransitBot(commands.Bot):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        meeting_dates_cache = set({})
-        target_channel = ''
+        self.meeting_dates_cache = set({})
+        self.target_channel = ''
 
         # Get meeting dates cache from file
         try:
