@@ -72,9 +72,7 @@ if __name__ == '__main__':
 
     # Create and run bot
     intents = discord.Intents.default()
-    # Following line is necessary for newer versions of discord.py,
-    #    but does not work for the version compatible with cs1 
-    # intents.message_content = True
+    intents.message_content = True
     client = BetterTransitBot(command_prefix='!', intents=intents)
 
     # Run bot
