@@ -2,15 +2,22 @@
 
 import ast
 import asyncio
+import os
+
 import discord
 from discord.ext import commands, tasks
 
 import cor
 
 # TODO:
-# - make cor meetings cog
-# https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html
+# - send update message
+# - make cor meetings cog (cogs: https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
 # - make events cog to update website?
+
+PREFIX_DIR = 'share'
+TOKEN_FILE = os.path.join(PREFIX_DIR, 'token.txt')
+CHANNEL_FILE = os.path.join(PREFIX_DIR, 'channel.txt')
+CACHE_FILE = os.path.join(PREFIX_DIR, 'cache.txt')
 
 class BetterTransitBot(commands.Bot):
 
@@ -22,13 +29,13 @@ class BetterTransitBot(commands.Bot):
 
         # Get meeting dates cache from file
         try:
-            with open('cfbt-cache.txt', 'r') as f:
+            with open(CACHE_FILE, 'r') as f:
                 self.meeting_dates_cache = ast.literal_eval(f.read())
         except FileNotFoundError:
             pass
 
         # Get meeting agenda output channel ID
-        with open('channel.txt', 'r') as f:
+        with open(CHANNEL_FILE, 'r') as f:
             self.target_channel = f.readline().strip()
         print(f'Sending meeting agendas to channel ID {self.target_channel}')
 
@@ -56,7 +63,7 @@ class BetterTransitBot(commands.Bot):
             print(f'New meeting: {m}')
 
             # Update the cache
-            with open('cfbt-cache.txt', 'w') as f:
+            with open(CACHE_FILE, 'w') as f:
                 f.write(str(self.meeting_dates_cache))
             print('Updated cache')
 
@@ -67,7 +74,7 @@ if __name__ == '__main__':
 
     # Get secret token from file
     token = ''
-    with open('token.txt', 'r') as f:
+    with open(TOKEN_FILE, 'r') as f:
         token = f.readline()
 
     # Create and run bot
@@ -77,4 +84,3 @@ if __name__ == '__main__':
 
     # Run bot
     client.run(token)
-
