@@ -14,12 +14,15 @@ import cor
 # - make cor meetings cog (cogs: https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
 # - make events cog to update website?
 
+# Configuration variables
 PREFIX_DIR = 'share'
 TOKEN_FILE = os.path.join(PREFIX_DIR, 'token.txt')
 CHANNEL_FILE = os.path.join(PREFIX_DIR, 'channel.txt')
 CACHE_FILE = os.path.join(PREFIX_DIR, 'cache.txt')
 
 class BetterTransitBot(commands.Bot):
+    """Holds a target channel and a cache of noticed meetings.
+       Periodically checks for new meetings if found, sends a message."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -61,6 +64,9 @@ class BetterTransitBot(commands.Bot):
             # Add the meeting
             self.meeting_dates_cache.add(m.date)
             print(f'New meeting: {m}')
+            # Send the message
+            print('Sending message to channel')
+            self.send_meeting_message(m)
 
             # Update the cache
             with open(CACHE_FILE, 'w') as f:
@@ -69,6 +75,10 @@ class BetterTransitBot(commands.Bot):
 
         else:
             print(f'Duplicate meeting: {m}')
+
+    def send_meeting_message(self, m):
+        """Send a message to the channel about the given new meeting"""
+        pass
 
 if __name__ == '__main__':
 
