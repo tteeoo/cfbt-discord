@@ -10,7 +10,7 @@ from discord.ext import commands, tasks
 import cor
 
 # TODO:
-# - send update message
+# - safety on cache file?
 # - make cor meetings cog (cogs: https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html)
 # - make events cog to update website?
 
@@ -28,7 +28,7 @@ class BetterTransitBot(commands.Bot):
         super().__init__(**kwargs)
 
         self.meeting_dates_cache = set({})
-        self.target_channel = ''
+        self.target_channel = None
 
         # Get meeting dates cache from file
         try:
@@ -37,15 +37,18 @@ class BetterTransitBot(commands.Bot):
         except FileNotFoundError:
             pass
 
-        # Get meeting agenda output channel ID
-        with open(CHANNEL_FILE, 'r') as f:
-            self.target_channel = f.readline().strip()
-        print(f'Sending meeting agendas to channel ID {self.target_channel}')
 
     async def on_ready(self):
         """Runs when the bot connects successfully"""
 
         print(f'Logged on as {self.user}')
+
+        # Get meeting agenda output channel ID
+        cid = -1
+        with open(CHANNEL_FILE, 'r') as f:
+            cid = int(f.readline().strip())
+            self.target_channel = self.get_channel(cid)
+        print(f'Target channel set to {self.target_channel} (ID: {cid})')
 
         print(f'Starting update task loop')
         self.update.start()
@@ -53,9 +56,9 @@ class BetterTransitBot(commands.Bot):
     @tasks.loop(seconds=5.0)
     async def update(self):
         """Event loop for checking for new meetings"""
-        self.add_meeting(cor.get_recent())
+        await self.add_meeting(cor.get_recent())
 
-    def add_meeting(self, m):
+    async def add_meeting(self, m):
         """Add a meeting to the meeting cache"""
 
         # Check the meeting is not already added
@@ -66,7 +69,7 @@ class BetterTransitBot(commands.Bot):
             print(f'New meeting: {m}')
             # Send the message
             print('Sending message to channel')
-            self.send_meeting_message(m)
+            await self.send_meeting_message(m)
 
             # Update the cache
             with open(CACHE_FILE, 'w') as f:
@@ -76,9 +79,13 @@ class BetterTransitBot(commands.Bot):
         else:
             print(f'Duplicate meeting: {m}')
 
-    def send_meeting_message(self, m):
-        """Send a message to the channel about the given new meeting"""
-        pass
+    async def send_meeting_message(self, m):
+        """Send a message to the target channel about the given new meeting"""
+
+        content = f"A New City of Richardson City Council meeting agenda for {m.date} has been posted. Here's the link: {m.agenda}"
+
+        await self.target_channel.send(content=content)
+        
 
 if __name__ == '__main__':
 
