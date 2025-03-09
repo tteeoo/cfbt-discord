@@ -37,47 +37,46 @@ class BetterTransitBot(commands.Bot):
         except FileNotFoundError:
             pass
 
-
     async def on_ready(self):
         """Runs when the bot connects successfully"""
 
-        print(f'Logged on as {self.user}')
+        print(f"Logged on as {self.user}")
 
         # Get meeting agenda output channel ID
         cid = -1
         with open(CHANNEL_FILE, 'r') as f:
             cid = int(f.readline().strip())
             self.target_channel = self.get_channel(cid)
-        print(f'Target channel set to {self.target_channel} (ID: {cid})')
+        print(f"Target channel set to {self.target_channel} (ID: {cid})")
 
-        print(f'Starting update task loop')
+        print(f"Starting update task loop")
         self.update.start()
 
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(seconds=60)
     async def update(self):
         """Event loop for checking for new meetings"""
-        await self.add_meeting(cor.get_recent())
+        await self.process_meeting(cor.get_recent())
 
-    async def add_meeting(self, m):
-        """Add a meeting to the meeting cache"""
+    async def process_meeting(self, m):
+        """Uses the cache to see if the given meeting is new, and sends a message to target channel"""
 
         # Check the meeting is not already added
-        if m.date not in self.meeting_dates_cache:
+        if m.date in self.meeting_dates_cache:
+            print(f"Duplicate meeting: {m}")
+        else:
+            # Only send message if meeting is not canceled
+            if m.canceled:
+                print(f"New meeting, but canceled: {m}")
+            else:
+                print(f"New meeting, sending message: {m}")
+                await self.send_meeting_message(m)
 
-            # Add the meeting
+            # Add the meeting to the cache
             self.meeting_dates_cache.add(m.date)
-            print(f'New meeting: {m}')
-            # Send the message
-            print('Sending message to channel')
-            await self.send_meeting_message(m)
-
             # Update the cache
             with open(CACHE_FILE, 'w') as f:
                 f.write(str(self.meeting_dates_cache))
-            print('Updated cache')
-
-        else:
-            print(f'Duplicate meeting: {m}')
+            print("Updated cache")
 
     async def send_meeting_message(self, m):
         """Send a message to the target channel about the given new meeting"""

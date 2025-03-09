@@ -1,6 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:130.0) Gecko/20100101 Firefox/130.0'
+MEETING_URL = 'https://www.cor.net/government/boards-commissions-meetings/city-council/city-council-regular-meeting-documents'
+
 class Meeting:
 
     date = ''
@@ -21,8 +24,7 @@ class Meeting:
 def get_recent():
 
     # Get recent meeting table row
-    resp = requests.get('https://www.cor.net/government/boards-commissions-meetings/city-council/city-council-regular-meeting-documents',
-                            headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:130.0) Gecko/20100101 Firefox/130.0'})
+    resp = requests.get(MEETING_URL, headers = {'User-Agent': USER_AGENT})
     bs = BeautifulSoup(resp.text, 'html.parser')
     table_rows = bs.find_all('tr', class_='govAccess-reTableOddRow-4')
     recent = table_rows[0]
@@ -30,7 +32,7 @@ def get_recent():
     # Create meeting object with agenda if meeting not canceled
     canceled = False
     agenda = ''
-    if recent.contents[3].string == 'No Meeting':
+    if recent.contents[3].string == "No Meeting":
         canceled = True
     else:
         agenda = recent.contents[3].a['href']
