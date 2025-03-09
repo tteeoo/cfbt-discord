@@ -21,20 +21,23 @@ class Meeting:
         else:
             return "Date: " + self.date + " | Agenda: " + self.agenda
 
-def get_recent():
+def get_meetings():
 
     # Get recent meeting table row
     resp = requests.get(MEETING_URL, headers = {'User-Agent': USER_AGENT})
     bs = BeautifulSoup(resp.text, 'html.parser')
     table_rows = bs.find_all('tr', class_='govAccess-reTableOddRow-4')
-    recent = table_rows[0]
 
-    # Create meeting object with agenda if meeting not canceled
-    canceled = False
-    agenda = ''
-    if recent.contents[3].string == "No Meeting":
-        canceled = True
-    else:
-        agenda = recent.contents[3].a['href']
+    meetings = []
+    for row in table_rows:
+        # Create meeting object with agenda if meeting not canceled
+        canceled = False
+        agenda = ''
+        if row.contents[3].string == "No Meeting":
+            canceled = True
+        else:
+            agenda = row.contents[3].a['href']
 
-    return Meeting(recent.contents[1].string, agenda, canceled)
+        meetings.append(Meeting(row.contents[1].string, agenda, canceled))
+
+    return meetings

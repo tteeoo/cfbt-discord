@@ -15,6 +15,7 @@ import cor
 # - make events cog to update website?
 
 # Configuration variables
+UPDATE_MINS = 5
 PREFIX_DIR = 'share'
 TOKEN_FILE = os.path.join(PREFIX_DIR, 'token.txt')
 CHANNEL_FILE = os.path.join(PREFIX_DIR, 'channel.txt')
@@ -52,10 +53,11 @@ class BetterTransitBot(commands.Bot):
         print(f"Starting update task loop")
         self.update.start()
 
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=(5.0 * UPDATE_MINS))
     async def update(self):
         """Event loop for checking for new meetings"""
-        await self.process_meeting(cor.get_recent())
+        for m in cor.get_meetings():
+            await self.process_meeting(m)
 
     async def process_meeting(self, m):
         """Uses the cache to see if the given meeting is new, and sends a message to target channel"""
