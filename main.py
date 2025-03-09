@@ -53,7 +53,7 @@ class BetterTransitBot(commands.Bot):
         print(f"Starting update task loop")
         self.update.start()
 
-    @tasks.loop(seconds=(5.0 * UPDATE_MINS))
+    @tasks.loop(seconds=(60.0 * UPDATE_MINS))
     async def update(self):
         """Event loop for checking for new meetings"""
         for m in cor.get_meetings():
