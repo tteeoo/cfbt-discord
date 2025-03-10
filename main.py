@@ -83,7 +83,7 @@ class BetterTransitBot(commands.Bot):
     async def send_meeting_message(self, m):
         """Send a message to the target channel about the given new meeting"""
 
-        content = f"A New City of Richardson City Council meeting agenda for {m.date} has been posted. Here's the link: {m.agenda}"
+        content = f"A new City of Richardson City Council meeting agenda for {m.date} has been posted. Here's the link: {m.agenda}"
 
         await self.target_channel.send(content=content)
         
